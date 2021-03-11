@@ -161,19 +161,30 @@ def get_slot_type(message_class, slot_path):
     :param slot_path: path to the slot inside the message class, ``str``, i.e. '_header/_seq'
     :returns: field_type, is_array
     """
+    print('IN TOPIC HELPERS')
     is_array = False
     fields = [f for f in slot_path.split('/') if f]
     for field_name in fields:
+        print('Field: ',field_name)
         slot_class_name = message_class.get_fields_and_field_types()[field_name]
+        print('Slot Class Name: ', slot_class_name)
 
-        array_index = slot_class_name.find('[')
+        array_index = slot_class_name.find('<')
         if array_index >= 0:
+            print('Determined to be array!')
             is_array = True
-            if is_primitive_type(slot_class_name[:array_index]):
-                message_class = get_type_class(slot_class_name[:array_index])
+            temp = slot_class_name[array_index+1:slot_class_name.find('>')]
+            print('Temp: ', temp)
+            # if is_primitive_type(slot_class_name[:array_index]):
+                # message_class = get_type_class(slot_class_name[:array_index])
+            # else:
+                # message_class = get_message_class(slot_class_name[:array_index])
+            if is_primitive_type(temp):
+                message_class = get_type_class(temp)
             else:
-                message_class = get_message_class(slot_class_name[:array_index])
+                message_class = get_message_class(temp)
         else:
+            print('Determined to not be array!')
             is_array = False
             if is_primitive_type(slot_class_name):
                 message_class = get_type_class(slot_class_name)
